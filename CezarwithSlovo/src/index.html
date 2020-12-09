@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Шифр Цезаря с кодовым словом</title>
+
+    <style>
+         html, body {
+            font color: #524f49;
+            font-family: 'Handlee', cursive;
+            position:relative;
+            width:100%;
+            height:100%;
+            background-color:#fff;
+            margin:0;
+            text-align: center;
+            font: 14px Arial,Helvetica,sans-serif;
+            letter-spacing: 1px;
+        }
+
+        #open-text,  #cipher-text {
+            width:60%;
+            height:17%;
+            margin:0px;
+            padding:25px;
+            background-color;
+            resize:none;
+            border-radius: 15px;
+            margin-top: 10 px;
+            outline:none;
+            border: 1px solid #524f49;
+                box-shadow: 0 0 10px 0 rgba(255,255,0,0.1), 0 0 6px 0 rgba(255,255,0,0.2), 0 0 10px 0 rgba(255,255,0,0.1);
+
+
+        }
+
+        section.actions {
+             width:50%;
+             margin: 20px auto;
+             border: 3px double #524f49;
+             border-radius: 15px
+
+        }
+
+       button.myh {
+       font color: #524f49;
+       font-family: 'Handlee', cursive;
+      font: 14px Arial,Helvetica,sans-serif;
+       letter-spacing: 1px;
+         background: transparent;
+        width:200px;
+        cursor: pointer;
+        padding: 5px 10px;
+        text-transform: uppercase;
+        width:125px;
+        text-align:center;
+        margin:10px 0;
+        display: inline;
+        background-position: 100% 0;
+        background-size: 200% 100%;
+        transition: all .10s ease-in;
+         text-transform: uppercase;
+         border: 1px solid #fff;
+         border-radius: 30%;
+         outline: none;
+       position:relative;
+       }
+
+        button.myh:hover{
+        background-position: 0 0;
+        color: red;
+         }
+
+    button.circle {
+         border: none;
+         outline: none;
+         cursor: pointer;
+         margin-top: 18px;
+         outline: none; /* Для синей ободки */
+         border: 0;
+         background: transparent;
+}
+
+    img {
+         width:50px;
+         height:50px;
+
+}
+
+    div {
+        color: #524f49;
+}
+
+    #demo{
+        display:none;
+        width:50%;
+        margin: 20px auto;
+        border: 3px double #524f49;
+        border-radius: 15px
+}
+
+    #lang{
+       position: absolute;
+       text-align: left;
+       color: #777;
+       font-size: 12px;
+       text-transform: uppercase;
+       letter-spacing: 1px;
+       border: 0;
+       height: 20px;
+       line-height: 38px;
+       text-align: left;
+       cursor: pointer;
+       font: Arial,Helvetica,sans-serif;
+       border: 1px solid #524f49;
+        outline: none;
+}
+
+    ::-webkit-input-placeholder {
+       padding: 25 px;
+       color: #bbb;
+       position: absolute;
+       font-family: Arial,Helvetica,sans-serif;
+}
+    :focus::-webkit-input-placeholder {
+       color: transparent;
+}
+
+    #showfreq {
+      margin-top: -8px;
+}
+
+    #header1, #header2{
+      margin-top: 20px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font: Arial,Helvetica,sans-serif;
+}
+
+     #headerforkeyword, #headerforkey{
+       text-transform: uppercase;
+       font: Arial,Helvetica,sans-serif;
+       margin-top: 10px;
+       margin-bottom: 3px;
+}
+#keyword, #key{
+ box-shadow: 0 0 10px 0 rgba(255,255,0,0.1), 0 0 6px 0 rgba(255,255,0,0.2), 0 0 10px 0 rgba(255,255,0,0.1);
+
+}
+input {
+  font-size: 16px;
+  border: 1px solid #ccc;
+}
+input:focus {
+  outline: none;
+}
+      </style>
+    </head>
+
+<body>
+    <div id="header1" >Открытый текст</div>
+
+    <select id="lang" name="lang">
+        <option value="rus">Русский</option>
+        <option value="eng">Английский</option>
+    </select>
+
+    <textarea id="open-text" placeholder="Введите открытый текст"></textarea>
+    <div><button class="circle" id="swap-wrap" ><img alt="" src="swap_vertical_circle-24px.svg" style="vertical-align:middle" /></button></div>
+    <div id="header2">Шифротекст</div>
+    <textarea id="cipher-text" placeholder="Введите шифротекст текст"></textarea>
+    <section class="actions">
+
+        <div id="headerforkeyword">Кодовое слово</div>
+        <div><input id="keyword"/></div>
+        <div id="headerforkey">Ключ</div>
+        <div> <input id="key"/></div>
+        <button class="myh" id="encrypt-btn">Зашифровать</button>
+        <button class="myh" id="decrypt-btn">Расшифровать</button>
+
+    </section>
+
+    <button onclick="Calculate()" class="myh" id="showfreq" onmousedown="viewDiv()">Частотный анализ</button>
+
+    <div id="demo"> </div>
+
+    <script>
+        function viewDiv(){
+        document.getElementById("demo").style.display = "block";
+        };
+    </script>
+
+    <script>
+function Calculate(){
+var total=0;
+var freqarr= [];
+var alpfreq=[];
+var text = document.getElementById('cipher-text').value;
+for(var i=0;i<text.length;++i){
+    var letter=text.charAt(i).toUpperCase();
+    var letters = /[АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ]/;
+    if (!letters.test(letter))
+    continue;
+    if (letter =="Е" || letter == "Ё")
+            letter = "Е,Ё";
+    if (letter =="ь" || letter == "ъ")
+            letter = "ь,ъ";
+    if (undefined === freqarr[letter])
+            freqarr[letter]=1;
+    else
+            freqarr[letter]=freqarr[letter]+1;
+    total++;
+    alpfreq[i]=letter;
+}
+
+var tuples = [];
+for (var key in freqarr) tuples.push([key, freqarr[key]]);
+
+tuples.sort(function(a, b) {
+    a = a[1];
+    b = b[1];
+    return a < b ? 1 : (a > b ? -1 : 0);
+});
+
+var rec=[];
+for (var i = 0; i<tuples.length;i++)
+{    var key = tuples[i][0];
+    var value = tuples[i][1];
+   var s =value/total;
+   rec[i]=[key,s];
+}
+var items = '';
+for(var i=0;i<rec.length;i++){
+items += rec[i][0]+ ' - ' + rec[i][1] + ' ';
+items+='<\p>'}
+document.getElementById('demo').innerHTML = items;
+}
+
+    </script>
+
+    <script src="out/production/untitled1/lib/kotlin.js"></script>
+    <script src="out/production/untitled1/untitled1.js"></script>
+</body>
+</html>
